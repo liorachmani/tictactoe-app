@@ -2,6 +2,7 @@ package com.example.tictactoe
 
 import android.os.Bundle
 import android.widget.Button
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -21,13 +22,16 @@ class MainActivity : AppCompatActivity() {
 
     private var currentTurn = Turn.CROSS
     private lateinit var board: Array<Array<Button>>
+    private lateinit var currentTurnText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        currentTurnText = findViewById(R.id.main_activity_turn_textview)
         initBoard()
+        setCurrentTurnLabel()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -69,7 +73,20 @@ class MainActivity : AppCompatActivity() {
         when {
             checkWinner(CROSS) -> declareResult("$CROSS won!")
             checkWinner(CIRCLE) -> declareResult("$CIRCLE won!")
+            isBoardFull() -> declareResult("Draw!")
         }
+        setCurrentTurnLabel()
+    }
+
+    private fun isBoardFull(): Boolean {
+        for (row in board) {
+            for (button in row) {
+                if (button.text.isEmpty()) {
+                    return false
+                }
+            }
+        }
+        return true
     }
 
     private fun declareResult(message: String) {
@@ -78,6 +95,16 @@ class MainActivity : AppCompatActivity() {
             .setMessage(message)
             .setPositiveButton("Play again") { _, _ -> resetBoard() }
             .show()
+    }
+
+    private fun resetBoard() {
+        for (row in board) {
+            for (button in row) {
+                button.text = ""
+            }
+        }
+        currentTurn = Turn.CROSS
+        setCurrentTurnLabel()
     }
 
     private fun checkWinner(player: String): Boolean {
@@ -108,6 +135,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         return false
+    }
+
+    private fun setCurrentTurnLabel() {
+        currentTurnText.text = when (currentTurn) {
+            Turn.CROSS -> "$CROSS play"
+            Turn.CIRCLE -> "$CIRCLE play"
+        }
     }
 
     private fun addToBoard(button: Button) {
